@@ -11,6 +11,7 @@ import { useLanguage } from "../../context/language"
 import type { AgentConfig, AgentInfo } from "../../types/messages"
 import SettingsRow from "./SettingsRow"
 import { buildExport } from "./mode-io"
+import { useNumericInput } from "./numeric-input"
 
 interface Props {
   name: string
@@ -41,6 +42,23 @@ const ModeEditView: Component<Props> = (props) => {
       },
     })
   }
+
+  // Numeric input handlers with support for intermediate states like "0."
+  const temperatureInput = useNumericInput(
+    () => cfg().temperature,
+    (val) => update({ temperature: val })
+  )
+
+  const topPInput = useNumericInput(
+    () => cfg().top_p,
+    (val) => update({ top_p: val })
+  )
+
+  const stepsInput = useNumericInput(
+    () => cfg().steps,
+    (val) => update({ steps: val }),
+    (val) => parseInt(val, 10)
+  )
 
   const exportMode = () => {
     const data = buildExport(props.name, cfg())
@@ -153,12 +171,10 @@ const ModeEditView: Component<Props> = (props) => {
           description={language.t("settings.agentBehaviour.temperature.description")}
         >
           <TextField
-            value={cfg().temperature?.toString() ?? ""}
+            value={temperatureInput.inputValue()}
             placeholder={language.t("common.default")}
-            onChange={(val) => {
-              const parsed = parseFloat(val)
-              update({ temperature: isNaN(parsed) ? undefined : parsed })
-            }}
+            onChange={temperatureInput.onInputChange}
+            onBlur={temperatureInput.onBlur}
           />
         </SettingsRow>
 
@@ -167,12 +183,10 @@ const ModeEditView: Component<Props> = (props) => {
           description={language.t("settings.agentBehaviour.topP.description")}
         >
           <TextField
-            value={cfg().top_p?.toString() ?? ""}
+            value={topPInput.inputValue()}
             placeholder={language.t("common.default")}
-            onChange={(val) => {
-              const parsed = parseFloat(val)
-              update({ top_p: isNaN(parsed) ? undefined : parsed })
-            }}
+            onChange={topPInput.onInputChange}
+            onBlur={topPInput.onBlur}
           />
         </SettingsRow>
 
@@ -181,12 +195,10 @@ const ModeEditView: Component<Props> = (props) => {
           description={language.t("settings.agentBehaviour.maxSteps.description")}
         >
           <TextField
-            value={cfg().steps?.toString() ?? ""}
+            value={stepsInput.inputValue()}
             placeholder={language.t("common.default")}
-            onChange={(val) => {
-              const parsed = parseInt(val, 10)
-              update({ steps: isNaN(parsed) ? undefined : parsed })
-            }}
+            onChange={stepsInput.onInputChange}
+            onBlur={stepsInput.onBlur}
           />
         </SettingsRow>
 
